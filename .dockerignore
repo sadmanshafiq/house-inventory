@@ -1,0 +1,8 @@
+data/
+.git/
+.venv/
+venv/
+__pycache__/
+*.md
+k8s-orbstack.yaml
+docker-compose.yml

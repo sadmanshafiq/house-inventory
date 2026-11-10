@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: "postgres"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: inventory
+            - name: POSTGRES_PASSWORD
+              value: inventory_pass_hpb
+            - name: POSTGRES_DB
+              value: inventory
+            # Subdirectory avoids permission conflicts with hostPath root
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: pg-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg-storage
+          hostPath:
+            path: /Users/namdas/Web-Projects/house-inventory/data/postgres
+            type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: house-inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: house-inventory
+  template:
+    metadata:
+      labels:
+        app: house-inventory
+    spec:
+      containers:
+        - name: api
+          image: house-inventory:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://inventory:inventory_pass_hpb@postgres:5432/inventory"
+            - name: MEDIA_DIR
+              value: "/data/media"
+          volumeMounts:
+            - name: media-storage
+              mountPath: /data/media
+      volumes:
+        - name: media-storage
+          hostPath:
+            path: /Users/namdas/Web-Projects/house-inventory/data/media
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: house-inventory
+spec:
+  type: LoadBalancer
+  selector:
+    app: house-inventory
+  ports:
+    - port: 8000
+      targetPort: 8000

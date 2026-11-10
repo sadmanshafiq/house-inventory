@@ -1,0 +1,12 @@
+# Local runtime data (Postgres data & uploaded media)
+data/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# macOS metadata
+.DS_Store

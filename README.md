@@ -1,0 +1,1 @@
+I appreciate the work you have done, I want to discuss this project in clear simple words before diving into technical details. I have done this step of bringing this to work but before going further and making this project workable for me. I need to determine how to create the 
